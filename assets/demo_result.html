@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  html, body { overflow: hidden; }
+  body {
+    margin: 0;
+    background: #1e1e2e;
+    font-family: "Malgun Gothic", "Consolas", monospace;
+    color: #cdd6f4;
+    padding: 28px 32px 120px 32px;
+    width: 856px;
+    box-sizing: border-box;
+  }
+  .title {
+    font-size: 15px;
+    color: #94e2d5;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #45475a;
+    padding-bottom: 10px;
+  }
+  .block { margin-bottom: 20px; }
+  .label { color: #f9e2af; font-size: 12.5px; margin-bottom: 6px; }
+  pre {
+    background: #181825;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .ok { color: #a6e3a1; }
+  .hi { color: #f38ba8; font-weight: bold; }
+  .med { color: #f9e2af; font-weight: bold; }
+  .num { color: #89b4fa; }
+</style>
+</head>
+<body>
+  <div style="height:37px"></div>
+  <div class="title">notebooks/earnings_call_briefing_poc.ipynb — 실제 실행 결과 (2026-09-23, 로컬 CPU)</div>
+
+  <div class="block">
+    <div class="label">## 4. STT 정확도 검증 (정량)</div>
+<pre>원본 대본 대비 STT 문자 유사도: <span class="num">91.3%</span>
+  '233퍼센트' 인식 여부: <span class="ok">O</span>
+  '88.9퍼센트' 인식 여부: <span class="ok">O</span>
+  '20퍼센트' 인식 여부: <span class="ok">O</span>
+  '12만' 인식 여부: <span class="ok">O</span>
+  '1만5천' 인식 여부: X (표현이 다르게 인식됐을 수 있음, 아래 원문 확인)
+WER (jiwer 기준): <span class="num">49.1%</span> (한국어 어절 분리 특성상 참고치)</pre>
+  </div>
+
+  <div class="block">
+    <div class="label">## 6. 최종 브리핑 출력 (타임스탬프 근거 포함)</div>
+<pre>==================================================
+실적발표 리스크 브리핑 — ㈜예시전자 2024년 4분기
+==================================================
+
+[<span class="med">MEDIUM</span>] 단기 유동성 부족
+  유동비율이 100%를 밑돈다는 발언이 확인됨
+  근거: 녹음 0분 46초 지점 발언
+
+[<span class="hi">HIGH</span>] 높은 부채비율
+  부채비율이 200%를 초과한다는 발언이 확인됨
+  근거: 녹음 0분 31초 지점 발언</pre>
+  </div>
+
+  <div class="block">
+    <div class="label">## 7. 처리 시간 비교 (ROI)</div>
+<pre>오디오 길이: <span class="num">105초</span>
+수작업 예상 소요시간(청취+메모, 1.75배 가정): <span class="num">183초</span>
+모델 처리 시간(STT만): <span class="num">87.7초</span>
+추정 절감률: <span class="num">52.2%</span></pre>
+  </div>
+
+  <div class="block">
+    <div class="label">## 8. Whisper 모델 크기 비교 (정확도 vs 속도)</div>
+<pre>모델                                   처리시간(초)    문자유사도(%)
+base                                       57.1            84.2
+small (채택)                               87.7            <span class="num">91.3</span>
+medium                                    493.5            91.1  <span class="hi">← 5.6배 느린데 더 정확하지도 않음</span></pre>
+  </div>
+
+  <div class="block">
+    <div class="label">## 9. 다중 시나리오 검증 — 실제로 발견한 오탐 버그</div>
+<pre>시나리오 C (성장전자, 부채비율 233%만 위험 / 유동비율 166%는 정상)
+  기대 결과            : {'높은 부채비율'}
+  수정 전(키워드 매칭) : {'단기 유동성 부족'}  <span class="hi">← 오탐 + 누락 동시 발생!</span>
+  수정 후(임계값 판정) : {'높은 부채비율'}      <span class="ok">→ PASS</span></pre>
+  </div>
+</body>
+</html>
