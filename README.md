@@ -51,6 +51,7 @@
 - **디코딩 안정성**: `condition_on_previous_text=False`로 Whisper의 반복 루프(hallucination loop)를 방지 — 검증 중 실제로 겪은 30분 타임아웃 문제의 해결책
 - **임계값 인자화**: 리스크 판정 임계값(부채비율/유동비율)을 코드에 박지 않고 함수 인자로 분리
 - **재실행해도 안 덮어쓰는 아카이빙**: 실행마다 `notebooks/runs/<RUN_ID>/`에 음성·STT 결과·리스크 판정을 보존
+- **STT 신뢰도 활용**: Whisper의 `avg_logprob`/`no_speech_prob`을 리스크마다 함께 남기고, 낮은 신뢰도 세그먼트를 근거로 썼다면 경고
 - **비밀정보 관리**: API 키는 Colab Secrets/환경변수로만 받고 코드·출력·git 이력에 남기지 않음
 
 ## 왜 AI-project_MVP와 같은 재무 숫자를 쓰는가

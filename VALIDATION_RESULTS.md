@@ -107,6 +107,7 @@
 - **임계값 인자화**: `mock_extract_risks`의 판정 임계값(부채비율 200%, 유동비율 100%)을 코드에 박지 않고 함수 인자(`debt_ratio_threshold`, `current_ratio_threshold`)로 뺐습니다. 조직마다 다를 수 있는 리스크 기준을 코드 수정 없이 바꿀 수 있습니다 (`APPLICATION_POINTS.md` 4번 섹션에서 발견한 위반사항을 수정).
 - **재실행해도 덮어쓰지 않는 산출물 아카이빙**: 실행마다 `RUN_ID`(타임스탬프)로 `notebooks/runs/<RUN_ID>/` 폴더를 새로 만들고, 그 안에 음성·STT 결과(`stt_result.json`)·리스크 판정(`risks.json`)을 보존합니다. `notebooks/earnings_call.mp3`는 README 등 문서에서 참조하는 최신 스냅샷일 뿐, 감사 기록의 원본은 `runs/` 쪽입니다 (마찬가지로 `APPLICATION_POINTS.md`에서 발견한 위반사항을 수정).
 - **비밀정보 관리**: `ANTHROPIC_API_KEY`는 Colab Secrets 또는 환경변수로만 받고, 노트북 출력·git 이력에 남지 않습니다(`.gitignore`로 `.venv/`, `notebooks/runs/` 등 로컬 산출물도 제외).
+- **STT 신뢰도 활용**: Whisper가 세그먼트마다 이미 내주는 `avg_logprob`/`no_speech_prob`을 그동안 계산에 안 쓰고 있었습니다. 이제 각 리스크에 근거 세그먼트의 신뢰도(`segment_confidence`)를 함께 남기고, 신뢰도가 낮은 세그먼트(`avg_logprob < -1.0` 또는 `no_speech_prob > 0.5`)를 근거로 삼았다면 경고를 출력합니다. **정직한 한계**: 이번 TTS 기반 클린 음성에서는 모든 세그먼트의 신뢰도가 높게 나와(예: avg_logprob≈-0.23) 실제로 경고가 발동한 적은 없습니다 — 이 코드가 "낮은 신뢰도를 실제로 걸러내는지"는 노이즈가 있는 실제 녹음으로 검증해야 확인됩니다.
 
 ## 4. Failure case — STT 자체의 한계 (2차 반영 후에도 남은 것)
 
