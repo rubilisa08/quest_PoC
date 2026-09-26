@@ -39,17 +39,17 @@
 </head>
 <body>
   <div style="height:37px"></div>
-  <div class="title">notebooks/earnings_call_briefing_poc.ipynb — 실제 실행 결과 (2026-09-23, 로컬 CPU)</div>
+  <div class="title">notebooks/earnings_call_briefing_poc.ipynb — 실제 실행 결과 (2026-09-26, 정확도/누락 2차 개선 후)</div>
 
   <div class="block">
-    <div class="label">## 4. STT 정확도 검증 (정량)</div>
-<pre>원본 대본 대비 STT 문자 유사도: <span class="num">91.3%</span>
+    <div class="label">## 4. STT 정확도 검증 (정량) — 공백-무관 매칭 반영 후</div>
+<pre>원본 대본 대비 STT 문자 유사도: <span class="num">89.1%</span>
   '233퍼센트' 인식 여부: <span class="ok">O</span>
   '88.9퍼센트' 인식 여부: <span class="ok">O</span>
   '20퍼센트' 인식 여부: <span class="ok">O</span>
   '12만' 인식 여부: <span class="ok">O</span>
-  '1만5천' 인식 여부: X (표현이 다르게 인식됐을 수 있음, 아래 원문 확인)
-WER (jiwer 기준): <span class="num">49.1%</span> (한국어 어절 분리 특성상 참고치)</pre>
+  '1만5천' 인식 여부: <span class="ok">O</span>  <span class="hi">← 이전엔 X, 공백-무관 매칭으로 해결</span>
+WER (jiwer 기준): 57.1% (한국어 어절 분리 특성상 참고치, 위 문자유사도가 더 적합)</pre>
   </div>
 
   <div class="block">
@@ -64,31 +64,33 @@ WER (jiwer 기준): <span class="num">49.1%</span> (한국어 어절 분리 특�
 
 [<span class="hi">HIGH</span>] 높은 부채비율
   부채비율이 200%를 초과한다는 발언이 확인됨
-  근거: 녹음 0분 31초 지점 발언</pre>
+  근거: 녹음 0분 37초 지점 발언</pre>
   </div>
 
   <div class="block">
-    <div class="label">## 7. 처리 시간 비교 (ROI)</div>
-<pre>오디오 길이: <span class="num">105초</span>
-수작업 예상 소요시간(청취+메모, 1.75배 가정): <span class="num">183초</span>
-모델 처리 시간(STT만): <span class="num">87.7초</span>
-추정 절감률: <span class="num">52.2%</span></pre>
+    <div class="label">## 7. 처리 시간 비교 (ROI) — condition_on_previous_text=False 반영 후</div>
+<pre>오디오 길이: <span class="num">103초</span>
+수작업 예상 소요시간(청취+메모, 1.75배 가정): <span class="num">180초</span>
+모델 처리 시간(STT만): <span class="num">29.7초</span>  <span class="hi">← 이전 87.7~137.9초, 디코딩 안정화 부수 효과</span>
+추정 절감률: <span class="num">83.5%</span></pre>
   </div>
 
   <div class="block">
     <div class="label">## 8. Whisper 모델 크기 비교 (정확도 vs 속도)</div>
 <pre>모델                                   처리시간(초)    문자유사도(%)
-base                                       57.1            84.2
-small (채택)                               87.7            <span class="num">91.3</span>
-medium                                    493.5            91.1  <span class="hi">← 5.6배 느린데 더 정확하지도 않음</span></pre>
+base                                        9.7            83.7
+small (채택)                               29.7            <span class="num">89.1</span>
+medium                                    396.1            91.0</pre>
   </div>
 
   <div class="block">
-    <div class="label">## 9. 다중 시나리오 검증 — 실제로 발견한 오탐 버그</div>
-<pre>시나리오 C (성장전자, 부채비율 233%만 위험 / 유동비율 166%는 정상)
-  기대 결과            : {'높은 부채비율'}
-  수정 전(키워드 매칭) : {'단기 유동성 부족'}  <span class="hi">← 오탐 + 누락 동시 발생!</span>
-  수정 후(임계값 판정) : {'높은 부채비율'}      <span class="ok">→ PASS</span></pre>
+    <div class="label">## 9. 다중 시나리오 검증 — 이번 실행에서 재확인된 것</div>
+<pre>시나리오 A (원본 대본) — 이번엔 STT가 "부채 비율"/"유동 비율"로 띄어 씀
+  기대 결과              : {'단기 유동성 부족', '높은 부채비율'}
+  수정 전(키워드 매칭)   : (없음)                              <span class="hi">← 둘 다 누락!</span>
+  수정 후(공백무관 판정) : {'단기 유동성 부족', '높은 부채비율'} <span class="ok">→ PASS</span>
+
+시나리오 B/C 포함 3개 전체 통과 — 공백 변형과 무관하게 항상 정확히 탐지</pre>
   </div>
 </body>
 </html>
