@@ -5,3 +5,4 @@ __pycache__/
 .claude/
 notebooks/scenario_B.mp3
 notebooks/scenario_C.mp3
+notebooks/runs/
