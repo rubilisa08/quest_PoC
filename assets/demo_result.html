@@ -39,7 +39,18 @@
 </head>
 <body>
   <div style="height:37px"></div>
-  <div class="title">notebooks/earnings_call_briefing_poc.ipynb — 실제 실행 결과 (2026-09-26, 정확도/누락 2차 개선 후)</div>
+  <div class="title">notebooks/earnings_call_briefing_poc.ipynb — 실제 실행 결과 (2026-09-27, grounding 버그 수정 + 확장 기능 반영 후)</div>
+
+  <div class="block">
+    <div class="label">## 0-1. Grounding 버그 발견 및 수정 — 근거 오디오 재생 기능을 만들다가 발견함</div>
+<pre>리스크: 높은 부채비율 (233%)
+  수정 전 근거: 37.5초 "자산 총계는 20만... 부채 총계는 14만..."  <span class="hi">← 전혀 다른 발언!</span>
+  수정 후 근거: 68.6초 "...현재 부채 비율은 233% 수준으로..."      <span class="ok">← 정확</span>
+
+리스크: 단기 유동성 부족 (88.9%)
+  수정 전 근거: 46.7초 "유동자산은 8만... 유동부채는 9만..."       <span class="hi">← 전혀 다른 발언!</span>
+  수정 후 근거: 76.5초 "유동 비율도 88.9%로 100%를 밑돌고..."      <span class="ok">← 정확</span></pre>
+  </div>
 
   <div class="block">
     <div class="label">## 4. STT 정확도 검증 (정량) — 공백-무관 매칭 반영 후</div>
@@ -48,49 +59,33 @@
   '88.9퍼센트' 인식 여부: <span class="ok">O</span>
   '20퍼센트' 인식 여부: <span class="ok">O</span>
   '12만' 인식 여부: <span class="ok">O</span>
-  '1만5천' 인식 여부: <span class="ok">O</span>  <span class="hi">← 이전엔 X, 공백-무관 매칭으로 해결</span>
-WER (jiwer 기준): 57.1% (한국어 어절 분리 특성상 참고치, 위 문자유사도가 더 적합)</pre>
+  '1만5천' 인식 여부: <span class="ok">O</span></pre>
   </div>
 
   <div class="block">
-    <div class="label">## 6. 최종 브리핑 출력 (타임스탬프 근거 포함)</div>
-<pre>==================================================
-실적발표 리스크 브리핑 — ㈜예시전자 2024년 4분기
-==================================================
-
-[<span class="med">MEDIUM</span>] 단기 유동성 부족
-  유동비율이 100%를 밑돈다는 발언이 확인됨
-  근거: 녹음 0분 46초 지점 발언
-
-[<span class="hi">HIGH</span>] 높은 부채비율
-  부채비율이 200%를 초과한다는 발언이 확인됨
-  근거: 녹음 0분 37초 지점 발언</pre>
+    <div class="label">## 11. 발표 vs 질의응답(Q&A) 구간 분리</div>
+<pre>질의응답 구간 시작 추정 시각: 56.9초
+[발표(Presentation)] 리스크 0건
+[질의응답(Q&A)] 리스크 2건
+  - 단기 유동성 부족 (76.5s)
+  - 높은 부채비율 (68.6s)</pre>
   </div>
 
   <div class="block">
-    <div class="label">## 7. 처리 시간 비교 (ROI) — condition_on_previous_text=False 반영 후</div>
-<pre>오디오 길이: <span class="num">103초</span>
-수작업 예상 소요시간(청취+메모, 1.75배 가정): <span class="num">180초</span>
-모델 처리 시간(STT만): <span class="num">29.3초</span>  <span class="hi">← 이전 87.7~137.9초, 디코딩 안정화 부수 효과</span>
-추정 절감률: <span class="num">83.8%</span></pre>
+    <div class="label">## 12. 음성-재무제표 십자 검증</div>
+<pre>음성에서 추출한 수치: {'매출_성장률': 20.0, '부채비율': 233.0, '유동비율': 88.9}
+[정확한 재무제표] 대조 결과:
+  불일치 없음                                                    <span class="ok">→ 정상</span>
+[오타가 있는 재무제표(가정)] 대조 결과:
+  ⚠️ 매출_성장률: 음성=20.0 vs 재무제표=8                          <span class="hi">← 불일치 정확히 탐지</span></pre>
   </div>
 
   <div class="block">
     <div class="label">## 8. Whisper 모델 크기 비교 (정확도 vs 속도)</div>
 <pre>모델                                   처리시간(초)    문자유사도(%)
-base                                        9.4            80.0
-small (채택)                               29.3            <span class="num">89.1</span>
-medium                                    305.1            91.0</pre>
-  </div>
-
-  <div class="block">
-    <div class="label">## 9. 다중 시나리오 검증 — 이번 실행에서 재확인된 것</div>
-<pre>시나리오 A (원본 대본) — 이번엔 STT가 "부채 비율"/"유동 비율"로 띄어 씀
-  기대 결과              : {'단기 유동성 부족', '높은 부채비율'}
-  수정 전(키워드 매칭)   : (없음)                              <span class="hi">← 둘 다 누락!</span>
-  수정 후(공백무관 판정) : {'단기 유동성 부족', '높은 부채비율'} <span class="ok">→ PASS</span>
-
-시나리오 B/C 포함 3개 전체 통과 — 공백 변형과 무관하게 항상 정확히 탐지</pre>
+base                                       15.3            80.0
+small (채택)                               64.0            <span class="num">89.1</span>
+medium                                    485.6            91.0</pre>
   </div>
 </body>
 </html>
